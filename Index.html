@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f7f7f5;--bg3:#f1f0ec;
+  --text:#1a1a1a;--text2:#6b6b6b;--text3:#999;
+  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.18);
+  --info-bg:#e6f1fb;--info-text:#185fa5;--info-border:#b5d4f4;
+  --success:#1D9E75;--warning:#EF9F27;--danger:#E24B4A;
+  --radius:8px;--radius-lg:12px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1e1e1c;--bg2:#28281f;--bg3:#2c2c28;
+  --text:#e8e6df;--text2:#a0a09a;--text3:#6b6b65;
+  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.18);
+  --info-bg:#0c3a5e;--info-text:#85b7eb;--info-border:#185fa5;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;padding:1.5rem}
+h1{font-size:18px;font-weight:500;margin-bottom:1.25rem}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
+.toolbar input[type=file]{display:none}
+button,label.btn{font-family:inherit;font-size:13px;cursor:pointer;padding:5px 12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:transparent;color:var(--text);transition:background .15s}
+button:hover,label.btn:hover{background:var(--bg2)}
+.btn-primary{background:var(--info-bg)!important;color:var(--info-text)!important;border-color:var(--info-border)!important;font-weight:500}
+.btn-primary:hover{opacity:.9}
+.hint{font-size:11px;color:var(--text3)}
+.table-wrap{overflow-x:auto;background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg)}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+th{text-align:left;padding:8px 12px;background:var(--bg2);color:var(--text2);font-weight:500;font-size:12px;border-bottom:0.5px solid var(--border);white-space:nowrap}
+td{padding:8px 12px;border-bottom:0.5px solid var(--border);vertical-align:middle;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg2)}
+.title-td{font-weight:500;cursor:pointer;max-width:200px}
+.title-td small{display:block;font-weight:400;font-size:11px;color:var(--text2);margin-top:2px}
+.date-td{white-space:nowrap;font-size:12px;color:var(--text2);min-width:80px}
+.check-td{text-align:center;min-width:48px}
+.chk{width:16px;height:16px;cursor:pointer;accent-color:var(--success)}
+.na{color:var(--border2);font-size:11px;text-align:center;display:block}
+.del{background:none!important;border:none!important;color:var(--text2);cursor:pointer;opacity:.3;font-size:18px;padding:0 4px;line-height:1}
+.del:hover{opacity:1;color:var(--danger)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;flex-shrink:0;vertical-align:middle}
+.d-idea{background:var(--text3)}
+.d-review{background:var(--warning)}
+.d-posted{background:var(--success)}
+.d-partial{background:#85B7EB}
+.owner{font-size:11px;padding:2px 7px;border-radius:20px;background:var(--bg2);color:var(--text2);border:0.5px solid var(--border);white-space:nowrap}
+.st-label{font-size:12px;white-space:nowrap}
+
+/* modal */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.mbg.open{display:flex}
+.modal{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;width:620px;max-width:96vw;max-height:92vh;overflow-y:auto}
+.modal h2{font-size:15px;font-weight:500;margin-bottom:1.25rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fl{margin-bottom:12px}
+.fl label{display:block;font-size:12px;color:var(--text2);margin-bottom:3px}
+.fl input,.fl textarea,.fl select{width:100%;font-size:13px;padding:6px 9px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit}
+.fl textarea{min-height:75px;resize:vertical}
+.fl input:focus,.fl textarea:focus,.fl select:focus{outline:none;border-color:var(--info-border);box-shadow:0 0 0 2px var(--info-bg)}
+.plat-picks{display:flex;flex-wrap:wrap;gap:8px;margin-top:3px}
+.plat-pick{display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer}
+.plat-pick input{width:auto;cursor:pointer}
+.cap-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.ctab{font-size:11px;padding:3px 10px;border-radius:20px;border:0.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+.ctab.active{background:var(--info-bg);color:var(--info-text);border-color:var(--info-border)}
+.cfield{display:none}
+.cfield.active{display:block}
+.copy-bar{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.copy-bar span{font-size:11px;color:var(--text2)}
+.copy-bar button{font-size:11px;padding:2px 8px}
+.mact{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem;padding-top:1rem;border-top:0.5px solid var(--border)}
+.empty-row td{text-align:center;color:var(--text2);padding:2.5rem;font-size:13px}
+</style>
+</head>
+<body>
+
+<h1>Content Tracker</h1>
+
+<div class="toolbar">
+  <button class="btn-primary" onclick="openModal()"><i class="ti ti-plus"></i> New post</button>
+  <label class="btn" title="Import CSV exported from Google Sheets">
+    <i class="ti ti-upload"></i> Import CSV
+    <input type="file" accept=".csv" onchange="importCSV(this)">
+  </label>
+  <button onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+  <span class="hint">Import your Google Sheet (File → Download → CSV) anytime to sync</span>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead><tr>
+  <th>date</th>
+  <th>title</th>
+  <th style="text-align:center">XHS</th>
+  <th style="text-align:center">Weibo</th>
+  <th style="text-align:center">IG</th>
+  <th style="text-align:center">TikTok</th>
+  <th style="text-align:center">X</th>
+  <th>status</th>
+  <th>owner</th>
+  <th></th>
+</tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<!-- modal -->
+<div class="mbg" id="mbg" onclick="if(event.target===this)closeModal()">
+<div class="modal" onclick="event.stopPropagation()">
+  <h2 id="mtitle">New post</h2>
+  <div class="grid2">
+    <div class="fl"><label>scheduled date</label><input type="text" id="f-date" placeholder="5/1/2026"></div>
+    <div class="fl"><label>content type</label><select id="f-ctype"><option>Photo set</option><option>Video</option><option>Reel / Short</option><option>Carousel</option><option>Text</option></select></div>
+  </div>
+  <div class="fl"><label>title / idea</label><input type="text" id="f-title" placeholder="Post title"></div>
+  <div class="grid2">
+    <div class="fl"><label>status</label><select id="f-status"><option>Idea</option><option>Review Required</option><option>Posted</option></select></div>
+    <div class="fl"><label>owner</label><input type="text" id="f-owner" placeholder="Naomi / Kevin / Both"></div>
+  </div>
+  <div class="fl"><label>platforms</label>
+    <div class="plat-picks" id="plat-picks">
+      <label class="plat-pick"><input type="checkbox" data-p="XHS"> 小红书 XHS</label>
+      <label class="plat-pick"><input type="checkbox" data-p="Weibo"> Weibo</label>
+      <label class="plat-pick"><input type="checkbox" data-p="IG"> Instagram</label>
+      <label class="plat-pick"><input type="checkbox" data-p="TikTok"> TikTok</label>
+      <label class="plat-pick"><input type="checkbox" data-p="X"> X</label>
+    </div>
+  </div>
+  <div class="fl">
+    <label>captions <span style="font-weight:400;color:var(--text2)">(per platform)</span></label>
+    <div class="cap-tabs" id="ctabs"></div>
+    <div class="copy-bar" id="copy-bar" style="display:none">
+      <span>Copy this to:</span>
+      <span id="copy-btns"></span>
+      <span>or</span>
+      <button onclick="copyToAll()">all platforms</button>
+    </div>
+    <div id="cfields"></div>
+  </div>
+  <div class="fl"><label>hashtags</label><input type="text" id="f-tags" placeholder="#skating #SOI"></div>
+  <div class="fl"><label>assets / links</label><input type="text" id="f-assets" placeholder="Canva / Drive link"></div>
+  <div class="fl"><label>notes</label><textarea id="f-notes"></textarea></div>
+  <div class="mact">
+    <button onclick="closeModal()">cancel</button>
+    <button class="btn-primary" onclick="savePost()">save</button>
+  </div>
+</div>
+</div>
+
+<script>
+const PLATS=['XHS','Weibo','IG','TikTok','X'];
+let posts=[],eid=null,activePlat=null;
+
+const SEED=[
+  {id:1,date:'4/10/2025',title:"Kevin's Birthday",type:'Video',platforms:['IG','TikTok','XHS'],captions:{},hashtags:'#AA #BB #cc',assets:'Lightroom link',notes:'Naomi Jiang review the post',status:'Idea',owner:'Naomi',posted:{}},
+  {id:2,date:'5/1/2026',title:"Mone Chiba's Birthday 🪻 | Ladies in Lavender | Worlds 2025",type:'Photo set',platforms:['Weibo','XHS','TikTok','IG','X'],captions:{'TikTok':'Happy birthday, Mone Chiba! 🎁🎂 Looking again at her amazing performance in Ladies in Lavender at Worlds 2025. So elegant on the ice!🪻💜','IG':'Happy birthday, Mone Chiba! 🎁🎂 Looking again at her amazing performance in Ladies in Lavender at Worlds 2025. So elegant on the ice!🪻💜','X':"Happy birthday, Mone Chiba! 🎁🎂 She gave us Ladies in Lavender at Worlds 2025 and we're still not over it🪻💜",'XHS':'千葉百音选手生日快乐 🪻💜','Weibo':'千葉百音选手生日快乐🎂🎁 回顾2025世锦赛表演滑的 Ladies in Lavender  真的越看越喜欢 愿她新赛季健康顺利🪻💜'},hashtags:'#MoneChiba #千葉百音 #LadiesInLavender #Worlds2025 #FigureSkating',assets:'https://canva.link/lzu8ugl6sulnmmk',notes:'',status:'Posted',owner:'Both',posted:{XHS:true,Weibo:true,TikTok:true,IG:true,X:true}},
+  {id:3,date:'5/4/2026',title:'INTY - Photo Dump 1: first glance at the May 2 show',type:'Photo set',platforms:['IG','TikTok','XHS','Weibo','X'],captions:{'IG':'Ice Theatre of New York | May 2, 2026\nFrom world premieres to stunning solos, each performance at Ice Theatre of New York was extraordinary. ✨','TikTok':'Ice Theatre of New York | May 2, 2026\nFrom world premieres to stunning solos, each performance at Ice Theatre of New York was extraordinary. ✨','XHS':'纽约冰上剧院 | 2026年5月2日\n从世界首演到精彩独舞，纽约冰上剧院的每一个节目都令人叹为观止。✨','Weibo':'纽约冰上剧院 | 2026年5月2日\n从世界首演到精彩独舞，纽约冰上剧院的每一个节目都令人叹为观止。✨\n今天晚上ilia也会出场作为特邀嘉宾表演。期待😚！','X':'Ice Theatre of New York | May 2, 2026 ✨'},hashtags:'#IceTheatreofNewYork #INTY #figureskating #iceskating #NYC',assets:'https://canva.link/03wz6wg1bbpen6z',notes:'',status:'Posted',owner:'Both',posted:{XHS:true,Weibo:true,TikTok:true,IG:true,X:true}},
+  {id:4,date:'5/5/2026',title:'Nathan Chen Birthday Tribute Post',type:'Photo set',platforms:['IG','TikTok','XHS','Weibo','X'],captions:{'IG':'I feel so lucky to have witnessed him being honored at the #ITNY Gala. Throwing it back to his incredible performances at the 2023 Vail Ice Show.','TikTok':'I feel so lucky to have witnessed him being honored at the #ITNY Gala. Throwing it back to his incredible performances at the 2023 Vail Ice Show.'},hashtags:'#NathanChen #陳巍 #ITNY #FigureSkating #QuadKing',assets:'https://canva.link/02ct0peqoo8ec9y',notes:'INS + tiktok',status:'Review Required',owner:'Kevin',posted:{}},
+  {id:5,date:'5/5/2026',title:'Happy Birthday Yuma Kagiyama! 🎂',type:'Photo set',platforms:['IG','TikTok','XHS','X','Weibo'],captions:{'IG':"Throwback to the sky dance at the 2025 World's Gala! It's one of my favorite performances! Enjoy resting and taking photos during your off-season. Come back even stronger! We can't wait! 💪",'TikTok':"Throwback to the sky dance at the 2025 World's Gala! It's one of my favorite performances! Enjoy resting and taking photos during your off-season. Come back even stronger! We can't wait! 💪",'XHS':"回看2025世锦赛Gala的《Sky Dance》，依然是我最喜欢的表演之一✨\n休赛期好好休息、好好生活、也尽情去拍喜欢的照片吧📷\n期待你满血归来，我们一直在等你💪",'Weibo':"回看2025世锦赛Gala的《Sky Dance》，依然是我最喜欢的表演之一✨\n期待你满血归来，我们一直在等你💪"},hashtags:'#YumaKagiyama #World #figureskating #Gala #鍵山優真',assets:'https://canva.link/xj5jcu9uzqtqu3p',notes:'',status:'Review Required',owner:'Kevin',posted:{}},
+  {id:6,date:'5/5/2026',title:'Stars on Ice 2026: First Half Preview',type:'Photo set',platforms:['IG','TikTok','XHS','Weibo','X'],captions:{'IG':'A little preview from the first half of the 2026 Stifel Stars on Ice Tour at Long Island, New York May 3rd! ⛸️ Stay tuned for more photos to come! 💌','TikTok':'A little preview from the first half of the 2026 Stifel Stars on Ice Tour at Long Island, New York May 3rd! ⛸️ Stay tuned for more photos to come! 💌'},hashtags:'#StarsOnIce #FigureSkating #LongIsland #IceSkating #2026Tour',assets:'',notes:'',status:'Idea',owner:'',posted:{}},
+  {id:7,date:'5/21/2026',title:'LV 2027 Cruise_Felix',type:'Photo set',platforms:['XHS','Weibo'],captions:{'XHS':'昨天在纽约街头偶遇LV 2027 Cruise 秀场入场，\n一辆车停下来，Felix走出来\n旁边好多好多的粉丝朋友们瞬间开始尖叫\n\n他一下车见到大家就朝着人群挥手致谢\n笑得好真诚\n进场以后隔着围栏\n他竟然还远远地回头挥手\n\n粉他的朋友真的好幸福🫶\n\n📷：Naomi Jiang','Weibo':'昨天在纽约街头偶遇LV 2027 Cruise 秀场入场，\n一辆车停下来，Felix走出来\n旁边好多好多的粉丝朋友们瞬间开始尖叫\n\n他一下车见到大家就朝着人群挥手致谢\n笑得好真诚\n进场以后隔着围栏\n他竟然还远远地回头挥手\n\n粉他的朋友真的好幸福🫶\n\n📷：Naomi Jiang'},hashtags:'#Felix #LV #纽约 #路透',assets:'',notes:'',status:'Idea',owner:'',posted:{}},
+  {id:8,date:'',title:'沙猫｜在布鲁克林见到沙漠最小的猎手',type:'Photo set',platforms:['XHS'],captions:{'XHS':'在 Prospect Park Zoo，我见到了三只沙猫。\n它们体重最轻不到三斤，体长不足六十厘米。\n\n它们猎蛇，包括毒蛇。\n它们可以几周不喝水，靠猎物的血肉补充水分。'},hashtags:'#沙猫 #我镜头下的猫 #ProspectPark #动物园',assets:'',notes:'',status:'Idea',owner:'',posted:{}},
+  {id:9,date:'',title:'SOI｜马00领衔TeamUSA男团',type:'Photo set',platforms:['XHS','Weibo','TikTok','X'],captions:{'Weibo':"20260503 Stars on Ice\nTeam USA 男团\nJason Brown, Ilia Malinin, Danny O'Shea, Anthony Ponomarenko, Andrew Torgashev\n\n📍 Long Island, New York\n📷 Naomi Jiang for AnythingGOEs",'XHS':"SOI｜马00领衔TeamUSA男团\nJason Brown, Ilia Malinin, Danny O'Shea, Anthony Ponomarenko, Andrew Torgashev Team USA 男团一起表演 火星哥的Bruno Mars  I Just Might\n\n📍 Long Island, New York\n📷 Naomi Jiang for AnythingGOEs",'TikTok':"SOI｜马00领衔TeamUSA男团\nJason Brown, Ilia Malinin, Danny O'Shea, Anthony Ponomarenko, Andrew Torgashev Team USA 男团一起表演 Bruno Mars 火星哥的 I Just Might\n\n📍 Long Island, New York\n📷 Naomi Jiang for AnythingGOEs",'X':'Ilia Malinin at #StarsonIce\n📷 Naomi Jiang for #AnythingGOEs'},hashtags:'#SOI #StarsonIce #AnythingGOEs',assets:'',notes:'',status:'Idea',owner:'',posted:{}}
+];
+
+function load(){try{const s=localStorage.getItem('ct_posts');if(s)posts=JSON.parse(s);else posts=JSON.parse(JSON.stringify(SEED));}catch{posts=JSON.parse(JSON.stringify(SEED));}render();}
+function save(){try{localStorage.setItem('ct_posts',JSON.stringify(posts));}catch{}}
+
+function dc(s){s=(s||'').toLowerCase();if(s.includes('post'))return 'd-posted';if(s.includes('review'))return 'd-review';if(s.includes('partial'))return 'd-partial';return 'd-idea';}
+function ps(p){const t=p.platforms.length,d=p.platforms.filter(pl=>p.posted&&p.posted[pl]).length;if(!t)return p.status||'Idea';if(d===t)return 'Posted';if(d>0)return 'Partial';return p.status||'Idea';}
+
+function render(){
+  const tb=document.getElementById('tbody');
+  if(!posts.length){tb.innerHTML='<tr class="empty-row"><td colspan="10">No posts yet — add one above</td></tr>';return;}
+  tb.innerHTML=posts.map(p=>{
+    const st=ps(p);
+    const cells=PLATS.map(pl=>{
+      if(!p.platforms.includes(pl))return`<td><span class="na">—</span></td>`;
+      const chk=p.posted&&p.posted[pl]?'checked':'';
+      return`<td class="check-td"><input type="checkbox" class="chk" ${chk} onchange="tog(${p.id},'${pl}',this.checked)" title="Mark ${pl} as posted"></td>`;
+    }).join('');
+    return`<tr>
+      <td class="date-td">${p.date||'—'}</td>
+      <td class="title-td" onclick="openEdit(${p.id})"><span class="dot ${dc(st)}"></span>${p.title}<small>${p.type||''}</small></td>
+      ${cells}
+      <td><span class="st-label"><span class="dot ${dc(st)}"></span>${st}</span></td>
+      <td>${p.owner?`<span class="owner">${p.owner}</span>`:''}</td>
+      <td><button class="del" onclick="del(${p.id})" title="Delete">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function tog(id,pl,v){const p=posts.find(x=>x.id===id);if(!p)return;if(!p.posted)p.posted={};p.posted[pl]=v;if(v&&p.platforms.every(x=>p.posted[x]))p.status='Posted';save();render();}
+function del(id){if(confirm('Delete this post?')){posts=posts.filter(x=>x.id!==id);save();render();}}
+
+function openModal(id){
+  eid=id||null;
+  const p=id?posts.find(x=>x.id===id):null;
+  document.getElementById('mtitle').textContent=p?'Edit post':'New post';
+  document.getElementById('f-date').value=p?p.date:'';
+  document.getElementById('f-title').value=p?p.title:'';
+  document.getElementById('f-ctype').value=p?(p.type||'Photo set'):'Photo set';
+  document.getElementById('f-status').value=p?(p.status||'Idea'):'Idea';
+  document.getElementById('f-owner').value=p?p.owner:'';
+  document.getElementById('f-tags').value=p?p.hashtags:'';
+  document.getElementById('f-assets').value=p?p.assets:'';
+  document.getElementById('f-notes').value=p?p.notes:'';
+  document.querySelectorAll('#plat-picks input[data-p]').forEach(cb=>{cb.checked=p?p.platforms.includes(cb.dataset.p):false;});
+  buildCapTabs(p?p.captions:{});
+  document.getElementById('mbg').classList.add('open');
+  setTimeout(()=>document.getElementById('f-title').focus(),50);
+}
+function openEdit(id){openModal(id);}
+function closeModal(){document.getElementById('mbg').classList.remove('open');eid=null;}
+
+function buildCapTabs(existing){
+  existing=existing||{};
+  const sel=[...document.querySelectorAll('#plat-picks input[data-p]:checked')].map(x=>x.dataset.p);
+  const prev={};document.querySelectorAll('#cfields .cfield').forEach(f=>{prev[f.dataset.p]=f.querySelector('textarea').value;});
+  const tabs=document.getElementById('ctabs'),fields=document.getElementById('cfields'),bar=document.getElementById('copy-bar');
+  if(!sel.length){tabs.innerHTML='';fields.innerHTML='<p style="font-size:12px;color:var(--text2)">Select platforms above</p>';bar.style.display='none';return;}
+  activePlat=sel[0];
+  tabs.innerHTML=sel.map((p,i)=>`<button type="button" class="ctab${i===0?' active':''}" data-p="${p}" onclick="switchCap('${p}')">${p}</button>`).join('');
+  fields.innerHTML=sel.map((p,i)=>`<div class="cfield${i===0?' active':''}" data-p="${p}"><textarea placeholder="Caption for ${p}…" style="width:100%;min-height:90px;resize:vertical;font-size:13px;padding:6px 9px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit">${prev[p]!==undefined?prev[p]:(existing[p]||'')}</textarea></div>`).join('');
+  bar.style.display='flex';updateCopyBtns();
+}
+
+function updateCopyBtns(){
+  const sel=[...document.querySelectorAll('#plat-picks input[data-p]:checked')].map(x=>x.dataset.p);
+  document.getElementById('copy-btns').innerHTML=sel.filter(p=>p!==activePlat).map(p=>`<button onclick="copyTo('${p}')" style="font-size:11px;padding:2px 8px">${p}</button>`).join('');
+}
+function switchCap(p){activePlat=p;document.querySelectorAll('.ctab').forEach(t=>t.classList.toggle('active',t.dataset.p===p));document.querySelectorAll('.cfield').forEach(f=>f.classList.toggle('active',f.dataset.p===p));updateCopyBtns();}
+function getCurrentCap(){const f=document.querySelector(`.cfield[data-p="${activePlat}"] textarea`);return f?f.value:'';}
+function copyTo(p){const f=document.querySelector(`.cfield[data-p="${p}"] textarea`);if(f)f.value=getCurrentCap();}
+function copyToAll(){const v=getCurrentCap();document.querySelectorAll('#cfields .cfield textarea').forEach(ta=>{if(!ta.value)ta.value=v;});}
+
+document.querySelectorAll('#plat-picks input[data-p]').forEach(cb=>{cb.onchange=()=>buildCapTabs({});});
+
+function savePost(){
+  const title=document.getElementById('f-title').value.trim();
+  if(!title){alert('Please add a title');return;}
+  const platforms=[...document.querySelectorAll('#plat-picks input[data-p]:checked')].map(x=>x.dataset.p);
+  const captions={};document.querySelectorAll('#cfields .cfield').forEach(f=>{const v=f.querySelector('textarea').value.trim();if(v)captions[f.dataset.p]=v;});
+  const obj={title,date:document.getElementById('f-date').value,type:document.getElementById('f-ctype').value,status:document.getElementById('f-status').value,owner:document.getElementById('f-owner').value,platforms,captions,hashtags:document.getElementById('f-tags').value,assets:document.getElementById('f-assets').value,notes:document.getElementById('f-notes').value};
+  if(eid){Object.assign(posts.find(x=>x.id===eid),obj);}else{posts.push({id:Date.now(),posted:{},...obj});}
+  save();render();closeModal();
+}
+
+function parseCSVRow(row){const res=[];let cur='',inQ=false;for(let i=0;i<row.length;i++){const c=row[i];if(c==='"'&&!inQ){inQ=true;}else if(c==='"'&&inQ){if(row[i+1]==='"'){cur+='"';i++;}else inQ=false;}else if(c===','&&!inQ){res.push(cur);cur='';}else cur+=c;}res.push(cur);return res.map(x=>x.replace(/^"|"$/g,''));}
+function normPlat(s){s=s.trim();if(/rednote|xhs|小红书/i.test(s))return 'XHS';if(/weibo|微博/i.test(s))return 'Weibo';if(/instagram|ins\b/i.test(s))return 'IG';if(/tiktok/i.test(s))return 'TikTok';if(/\bx\b|twitter/i.test(s))return 'X';return s;}
+
+function importCSV(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const lines=e.target.result.split('\n').filter(l=>l.trim());
+    if(lines.length<2){alert('CSV seems empty');return;}
+    const headers=parseCSVRow(lines[0]);
+    const idx=h=>headers.findIndex(x=>x.toLowerCase().trim()===h.toLowerCase());
+    const iDate=idx('sched. date'),iTitle=idx('idea / title'),iPlat=idx('platform'),iStat=idx('status'),iOwner=idx('owner'),iCap=idx('caption'),iTags=idx('hashtags'),iType=idx('content type'),iAssets=idx('assets (links)'),iNotes=idx('notes');
+    const imported=[];
+    for(let i=1;i<lines.length;i++){
+      const cols=parseCSVRow(lines[i]);
+      const title=(cols[iTitle]||'').trim();if(!title)continue;
+      const platStr=(cols[iPlat]||'').trim();
+      const platforms=platStr?platStr.split(/,|，/).map(p=>normPlat(p)).filter(p=>PLATS.includes(p)):[];
+      const capRaw=(cols[iCap]||'').trim();
+      const captions={};
+      if(capRaw){
+        const capLines=capRaw.split('\n');
+        let curPlat=null,buf=[];
+        const flush=()=>{if(curPlat&&buf.join('\n').trim())captions[curPlat]=buf.join('\n').trim();};
+        capLines.forEach(l=>{
+          const m=l.match(/^(TikTok|Instagram|Rednote|XHS|Weibo|X \(Twitter\)|X|微博|小红书)[:/：]?\s*/i);
+          if(m){flush();curPlat=normPlat(m[1]);buf=[];const rest=l.slice(m[0].length).trim();if(rest)buf.push(rest);}
+          else{if(curPlat)buf.push(l);else if(!Object.keys(captions).length)platforms.forEach(p=>{if(!captions[p])captions[p]=capRaw;});}
+        });
+        flush();
+      }
+      imported.push({id:Date.now()+i,date:(cols[iDate]||'').trim(),title,type:(cols[iType]||'Photo set').trim(),status:(cols[iStat]||'Idea').trim(),owner:(cols[iOwner]||'').trim(),platforms,captions,hashtags:(cols[iTags]||'').trim(),assets:(cols[iAssets]||'').trim(),notes:(cols[iNotes]||'').trim(),posted:{}});
+    }
+    if(!imported.length){alert('No posts found in CSV');return;}
+    if(confirm(`Import ${imported.length} posts? This will replace your current data.`)){posts=imported;save();render();}
+  };
+  r.readAsText(f);input.value='';
+}
+
+function exportCSV(){
+  const hdr=['Sched. Date','Idea / Title','Platform','Status','Owner','Caption (XHS)','Caption (Weibo)','Caption (IG)','Caption (TikTok)','Caption (X)','Hashtags','Content Type','Assets (links)','Notes','Posted XHS','Posted Weibo','Posted IG','Posted TikTok','Posted X'];
+  const rows=posts.map(p=>[p.date,p.title,p.platforms.join(', '),p.status,p.owner,p.captions?.XHS||'',p.captions?.Weibo||'',p.captions?.IG||'',p.captions?.TikTok||'',p.captions?.X||'',p.hashtags,p.type,p.assets,p.notes,p.posted?.XHS?'✓':'',p.posted?.Weibo?'✓':'',p.posted?.IG?'✓':'',p.posted?.TikTok?'✓':'',p.posted?.X?'✓':'']);
+  const csv=[hdr,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='content_tracker.csv';a.click();
+}
+
+load();
+</script>
+</body>
+</html>
